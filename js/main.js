@@ -19,6 +19,10 @@ const TIME_LIMIT = 10;
 let gameStat = "loading";
 let isLookingBackward = true;
 
+// Music
+const bgMusic = new Audio('music/bg.mp3')
+bgMusic.loop = true
+
 function createCube(size, positionX, rotY = 0, color = 0xfbc851) {
     // Pass height, width and depth to geometry object
     const geometry = new THREE.BoxGeometry(size.w, size.h, size.d);
@@ -56,7 +60,7 @@ class Doll {
     lookBackward() {
         //this.doll.rotation.y = -3.25;
         gsap.to(this.doll.rotation, { y: -3.15, duration: 0.3 })
-        setTimeout(() => isLookingBackward = true, 450)
+        setTimeout(() => isLookingBackward = true, 150)
     }
 
     // Make the doll looks forward
@@ -121,11 +125,13 @@ class Player {
     // Check if player is moving when doll is looking forward
     check() {
         if (this.playerInfo.velocity > 0 && !isLookingBackward) {
-            alert("You lose !")
+            text.innterText = "You lose !"
+            gameStat = "over"
         }
 
         if (this.playerInfo.positionX < end_position + 0.5) {
-            alert("You win !")
+            text.innterText = "You win !"
+            gameStat = "over"
         }
     }
 }
@@ -144,6 +150,8 @@ async function init() {
     await delay(500)
     text.innerText = "Go!"
     startGame()
+    bgMusic.play()
+    start()
 }
 
 function startGame() {
@@ -152,6 +160,15 @@ function startGame() {
     progressbar.position.y = 3.35
     gsap.to(progressbar.scale, { x: 0, duration: TIME_LIMIT, ease: "none" })
     doll.start()
+
+    // Check if time is out
+    setTimeout(() => {
+        if (gameStat != "over") {
+            text.innerText = "You lose ! Time is out!"
+            gameStat = "over"
+        }
+
+    }, TIME_LIMIT * 1000);
 }
 
 init()
@@ -161,6 +178,10 @@ setTimeout(() => {
 }, 1000);
 
 function animate() {
+    if (gameStat == "over") {
+        return
+    }
+
     // Render the scence and object to web interface
     renderer.render(scene, camera);
     requestAnimationFrame(animate);
